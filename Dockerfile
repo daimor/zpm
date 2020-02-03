@@ -1,4 +1,5 @@
-FROM store/intersystems/iris-community:2019.4.0.383.0
+ARG BASE=store/intersystems/iris-community:2019.4.0.383.0
+FROM ${BASE}
 
 USER root
 

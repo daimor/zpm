@@ -176,13 +176,20 @@ load -dev -verbose C:\module\root\path\module-0.0.1.tgz
 }
 
 /// @PublicAPI
-ClassMethod Shell(pCommand As %String) As %Status
+ClassMethod Shell(pCommand As %String, pHaltOnError As %Boolean = 0, pHalt As %Boolean = 0) As %Status
 {
 	Set tSC = $$$OK
 	Do ..ShellInternal(.pCommand,.tException)
 	If $IsObject(tException) {
 		Set tSC = tException.AsStatus()
 	}
+	#; Terminate job, if error happend with OS level status
+	If pHaltOnError, $$$ISERR(tSC) {
+		Do $System.Process.Terminate(, 1)
+	}	
+	If pHalt {
+		Halt 
+	}	
 	Quit tSC
 }
 
@@ -542,12 +549,12 @@ ClassMethod Install(ByRef pCommandInfo) [ Internal ]
 		Set tPrefix = ""
 		If (tModuleName '= "") {
 			If (tVersion '= "") {
-				Write !,tModuleName_" "_tVersion_" not found in any repository."
+        $$$ThrowStatus($$$ERROR($$$GeneralError, tModuleName_" "_tVersion_" not found in any repository."))
 			} Else {
-				Write !,"'",tModuleName_"' not found in any repository."
+        $$$ThrowStatus($$$ERROR($$$GeneralError, "'"_tModuleName_"' not found in any repository."))
 			}
 		} ElseIf (tKeywords '= "") {
-			Write !,"No modules found matching keywords: '",tKeywords,"'"
+      $$$ThrowStatus($$$ERROR($$$GeneralError,"No modules found matching keywords: '"_tKeywords_"'"))
 		} Else {
 			
 		}
